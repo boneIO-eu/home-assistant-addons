@@ -31,34 +31,34 @@ except ImportError:
 # ============================================
 
 ENERGY_SENSORS = {
-    "sensor.solar_production": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Solar Production"},
-    "sensor.battery_energy_in": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Battery Energy In"},
-    "sensor.battery_energy_out": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Battery Energy Out"},
-    "sensor.grid_consumption": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Grid Consumption"},
-    "sensor.grid_return": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Grid Return"},
-    "sensor.heat_pump_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Heat Pump Energy"},
-    "sensor.induction_cooktop_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Induction Cooktop Energy"},
-    "sensor.water_heater_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Water Heater Energy"},
-    "sensor.air_conditioning_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Air Conditioning Energy"},
-    "sensor.lighting_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Lighting Energy"},
-    "sensor.washing_machine_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Washing Machine Energy"},
-    "sensor.ev_charger_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "EV Charger Energy"},
-    "sensor.water_consumption": {"unit": "L", "has_mean": False, "has_sum": True, "name": "Water Consumption"},
-    "sensor.house_water": {"unit": "L", "has_mean": False, "has_sum": True, "name": "House Water"},
-    "sensor.garden_water": {"unit": "L", "has_mean": False, "has_sum": True, "name": "Garden Water"},
+    "sensor.demo_boneio_solar_production": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Solar Production"},
+    "sensor.demo_boneio_battery_energy_in": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Battery Energy In"},
+    "sensor.demo_boneio_battery_energy_out": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Battery Energy Out"},
+    "sensor.demo_boneio_grid_consumption": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Grid Consumption"},
+    "sensor.demo_boneio_grid_return": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Grid Return"},
+    "sensor.demo_boneio_heat_pump_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Heat Pump Energy"},
+    "sensor.demo_boneio_induction_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Induction Energy"},
+    "sensor.demo_boneio_water_heater_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Water Heater Energy"},
+    "sensor.demo_boneio_ac_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo AC Energy"},
+    "sensor.demo_boneio_lighting_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Lighting Energy"},
+    "sensor.demo_boneio_washing_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo Washing Energy"},
+    "sensor.demo_boneio_ev_energy": {"unit": "kWh", "has_mean": False, "has_sum": True, "name": "Demo EV Energy"},
+    "sensor.demo_boneio_water_total": {"unit": "L", "has_mean": False, "has_sum": True, "name": "Demo Water Total"},
+    "sensor.demo_boneio_water_house": {"unit": "L", "has_mean": False, "has_sum": True, "name": "Demo Water House"},
+    "sensor.demo_boneio_water_garden": {"unit": "L", "has_mean": False, "has_sum": True, "name": "Demo Water Garden"},
 }
 
 POWER_SENSORS = {
-    "sensor.solar_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Solar Power"},
-    "sensor.battery_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Battery Power"},
-    "sensor.grid_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Grid Power"},
-    "sensor.heat_pump_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Heat Pump Power"},
-    "sensor.induction_cooktop_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Induction Cooktop Power"},
-    "sensor.water_heater_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Water Heater Power"},
-    "sensor.air_conditioning_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Air Conditioning Power"},
-    "sensor.lighting_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Lighting Power"},
-    "sensor.washing_machine_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Washing Machine Power"},
-    "sensor.ev_charger_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "EV Charger Power"},
+    "sensor.demo_boneio_solar_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Solar Power"},
+    "sensor.demo_boneio_battery_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Battery Power"},
+    "sensor.demo_boneio_grid_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Grid Power"},
+    "sensor.demo_boneio_heat_pump_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Heat Pump Power"},
+    "sensor.demo_boneio_induction_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Induction Power"},
+    "sensor.demo_boneio_water_heater_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Water Heater Power"},
+    "sensor.demo_boneio_ac_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo AC Power"},
+    "sensor.demo_boneio_lighting_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Lighting Power"},
+    "sensor.demo_boneio_washing_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo Washing Power"},
+    "sensor.demo_boneio_ev_power": {"unit": "W", "has_mean": True, "has_sum": False, "name": "Demo EV Power"},
 }
 
 
@@ -102,13 +102,75 @@ class SmoothValue:
 # ============================================
 
 def calculate_power(dt: datetime, smoothers: dict) -> dict:
-    """Calculate all power values for a given time (synchronized)."""
+    """Calculate all power values for a given time (synchronized).
+    
+    Energy balance: Grid + Solar + Battery_out = Sum of all devices
+    """
     hour = dt.hour + dt.minute / 60
     seasonal = get_seasonal_factor(dt)
     heating = get_heating_factor(dt)
     cooling = get_cooling_factor(dt)
     
-    # Solar - smooth bell curve
+    # ============================================
+    # FIRST: Calculate all device consumption
+    # ============================================
+    
+    # Heat pump (biggest base load)
+    hp_target = (1200 if 6 <= dt.hour <= 21 else 600) * heating
+    heat_pump = smoothers['heat_pump'].update(hp_target)
+    
+    # Induction (meal times only)
+    if dt.hour == 7 and 20 <= dt.minute <= 50:
+        ind_target = 1200
+    elif dt.hour == 12 and dt.minute <= 40:
+        ind_target = 1500
+    elif dt.hour in [18, 19] and ((dt.hour == 18 and dt.minute >= 30) or (dt.hour == 19 and dt.minute <= 30)):
+        ind_target = 2000
+    else:
+        ind_target = 0
+    induction = smoothers['induction'].update(ind_target)
+    
+    # Water heater (morning/evening)
+    wh_target = 1200 if dt.hour in [6, 7, 8, 19, 20, 21] else 80
+    water_heater = smoothers['water_heater'].update(wh_target)
+    
+    # AC (summer afternoons only)
+    ac_target = 1500 * cooling
+    ac = smoothers['ac'].update(ac_target)
+    
+    # Lighting
+    if 18 <= dt.hour <= 23:
+        light_target = 200
+    elif 6 <= dt.hour <= 8:
+        light_target = 120
+    else:
+        light_target = 30
+    lighting = smoothers['lighting'].update(light_target)
+    
+    # Washing (weekend and evening cycles)
+    wd = dt.weekday()
+    if (wd >= 5 and dt.hour in [10, 11, 14, 15]) or (wd < 5 and dt.hour == 19 and dt.minute <= 30):
+        wash_target = 800
+    else:
+        wash_target = 0
+    washing = smoothers['washing'].update(wash_target)
+    
+    # EV Charger (night only, reduced to be more realistic)
+    ev_target = 3500 if dt.hour in [23, 0, 1, 2, 3, 4] else 0
+    ev = smoothers['ev'].update(ev_target)
+    
+    # Other/base load (fridge, standby, etc.) - implicit in grid calculation
+    base_load = 150
+    
+    # ============================================
+    # TOTAL CONSUMPTION = sum of all devices
+    # ============================================
+    total_consumption = (heat_pump + induction + water_heater + ac + 
+                         lighting + washing + ev + base_load)
+    
+    # ============================================
+    # SOLAR PRODUCTION
+    # ============================================
     if hour < 6 or hour > 20:
         solar_target = 0
     else:
@@ -116,104 +178,63 @@ def calculate_power(dt: datetime, smoothers: dict) -> dict:
         solar_target = 6000 * seasonal * solar_factor
     solar = smoothers['solar'].update(solar_target)
     
-    # Battery - charges from solar, discharges evening
-    if solar > 2000:
-        battery_target = -min(2500, solar * 0.3)
-    elif 17 <= dt.hour <= 22:
-        battery_target = 1500 * (1 - abs(dt.hour - 19.5) / 5)
-    elif dt.hour >= 22 or dt.hour < 6:
-        battery_target = 300
+    # ============================================
+    # BATTERY: charges from excess solar, discharges when needed
+    # ============================================
+    solar_excess = max(0, solar - total_consumption)
+    solar_deficit = max(0, total_consumption - solar)
+    
+    if solar_excess > 500:
+        # Charge battery from excess solar
+        battery_target = -min(2500, solar_excess * 0.8)
+    elif solar_deficit > 500 and (17 <= dt.hour <= 22):
+        # Discharge battery in evening when solar is low
+        battery_target = min(1500, solar_deficit * 0.6)
+    elif solar_deficit > 0 and (dt.hour >= 22 or dt.hour < 6):
+        # Small discharge at night
+        battery_target = min(300, solar_deficit * 0.3)
     else:
         battery_target = 0
     battery = smoothers['battery'].update(battery_target)
     
-    # Consumption base
-    if 6 <= dt.hour <= 9:
-        consumption = 2000
-    elif 17 <= dt.hour <= 21:
-        consumption = 2500
-    elif 9 < dt.hour < 17:
-        consumption = 1200
-    else:
-        consumption = 600
+    # ============================================
+    # GRID = Total consumption - Solar used - Battery discharge
+    # ============================================
+    solar_used = min(solar, total_consumption)  # Can't use more solar than we produce
+    battery_discharge = max(0, battery)  # Only positive = discharge
     
-    # Grid
-    grid_target = consumption - max(0, solar * 0.6) - max(0, battery)
-    grid = smoothers['grid'].update(grid_target)
-    
-    # Heat pump
-    hp_target = (1500 if 6 <= dt.hour <= 21 else 800) * heating
-    heat_pump = smoothers['heat_pump'].update(hp_target)
-    
-    # Induction (meal times)
-    if dt.hour == 7 and 20 <= dt.minute <= 50:
-        ind_target = 1200
-    elif dt.hour == 12 and dt.minute <= 40:
-        ind_target = 1800
-    elif dt.hour in [18, 19] and ((dt.hour == 18 and dt.minute >= 30) or (dt.hour == 19 and dt.minute <= 30)):
-        ind_target = 2200
-    else:
-        ind_target = 0
-    induction = smoothers['induction'].update(ind_target)
-    
-    # Water heater
-    wh_target = 1500 if dt.hour in [6, 7, 8, 19, 20, 21] else 100
-    water_heater = smoothers['water_heater'].update(wh_target)
-    
-    # AC
-    ac_target = 2000 * cooling
-    ac = smoothers['ac'].update(ac_target)
-    
-    # Lighting
-    if 18 <= dt.hour <= 23:
-        light_target = 250
-    elif 6 <= dt.hour <= 8:
-        light_target = 150
-    else:
-        light_target = 40
-    lighting = smoothers['lighting'].update(light_target)
-    
-    # Washing (cycles)
-    wd = dt.weekday()
-    if (wd >= 5 and dt.hour in [10, 11, 14, 15]) or (wd < 5 and dt.hour == 19 and dt.minute <= 30):
-        wash_target = 1000
-    else:
-        wash_target = 0
-    washing = smoothers['washing'].update(wash_target)
-    
-    # EV
-    ev_target = 7000 if dt.hour in [23, 0, 1, 2, 3, 4] else 0
-    ev = smoothers['ev'].update(ev_target)
+    grid = total_consumption - solar_used - battery_discharge
     
     return {
-        "sensor.solar_power": solar,
-        "sensor.battery_power": battery,
-        "sensor.grid_power": grid,
-        "sensor.heat_pump_power": heat_pump,
-        "sensor.induction_cooktop_power": induction,
-        "sensor.water_heater_power": water_heater,
-        "sensor.air_conditioning_power": ac,
-        "sensor.lighting_power": lighting,
-        "sensor.washing_machine_power": washing,
-        "sensor.ev_charger_power": ev,
+        "sensor.demo_boneio_solar_power": solar,
+        "sensor.demo_boneio_battery_power": max(0, battery),  # Only show discharge (positive) for power graph
+        "_battery_raw": battery, # Add this for energy calculation
+        "sensor.demo_boneio_grid_power": grid,
+        "sensor.demo_boneio_heat_pump_power": heat_pump,
+        "sensor.demo_boneio_induction_power": induction,
+        "sensor.demo_boneio_water_heater_power": water_heater,
+        "sensor.demo_boneio_ac_power": ac,
+        "sensor.demo_boneio_lighting_power": lighting,
+        "sensor.demo_boneio_washing_power": washing,
+        "sensor.demo_boneio_ev_power": ev,
     }
 
 
 def calculate_energy(dt: datetime, power: dict) -> dict:
     """Calculate hourly energy from power values."""
     return {
-        "sensor.solar_production": power["sensor.solar_power"] / 1000,
-        "sensor.battery_energy_in": max(0, -power["sensor.battery_power"]) / 1000,
-        "sensor.battery_energy_out": max(0, power["sensor.battery_power"]) / 1000,
-        "sensor.grid_consumption": max(0, power["sensor.grid_power"]) / 1000,
-        "sensor.grid_return": max(0, -power["sensor.grid_power"]) / 1000,
-        "sensor.heat_pump_energy": power["sensor.heat_pump_power"] / 1000,
-        "sensor.induction_cooktop_energy": power["sensor.induction_cooktop_power"] / 1000,
-        "sensor.water_heater_energy": power["sensor.water_heater_power"] / 1000,
-        "sensor.air_conditioning_energy": power["sensor.air_conditioning_power"] / 1000,
-        "sensor.lighting_energy": power["sensor.lighting_power"] / 1000,
-        "sensor.washing_machine_energy": power["sensor.washing_machine_power"] / 1000,
-        "sensor.ev_charger_energy": power["sensor.ev_charger_power"] / 1000,
+        "sensor.demo_boneio_solar_production": power["sensor.demo_boneio_solar_power"] / 1000,
+        "sensor.demo_boneio_battery_energy_in": max(0, -power.get("_battery_raw", 0)) / 1000,
+        "sensor.demo_boneio_battery_energy_out": max(0, power["sensor.demo_boneio_battery_power"]) / 1000,
+        "sensor.demo_boneio_grid_consumption": max(0, power["sensor.demo_boneio_grid_power"]) / 1000,
+        "sensor.demo_boneio_grid_return": max(0, -power["sensor.demo_boneio_grid_power"]) / 1000,
+        "sensor.demo_boneio_heat_pump_energy": power["sensor.demo_boneio_heat_pump_power"] / 1000,
+        "sensor.demo_boneio_induction_energy": power["sensor.demo_boneio_induction_power"] / 1000,
+        "sensor.demo_boneio_water_heater_energy": power["sensor.demo_boneio_water_heater_power"] / 1000,
+        "sensor.demo_boneio_ac_energy": power["sensor.demo_boneio_ac_power"] / 1000,
+        "sensor.demo_boneio_lighting_energy": power["sensor.demo_boneio_lighting_power"] / 1000,
+        "sensor.demo_boneio_washing_energy": power["sensor.demo_boneio_washing_power"] / 1000,
+        "sensor.demo_boneio_ev_energy": power["sensor.demo_boneio_ev_power"] / 1000,
     }
 
 
@@ -234,9 +255,9 @@ def calculate_water(dt: datetime) -> dict:
     garden = 25 if summer and watering else 0
     
     return {
-        "sensor.water_consumption": house + garden,
-        "sensor.house_water": house,
-        "sensor.garden_water": garden,
+        "sensor.demo_boneio_water_total": house + garden,
+        "sensor.demo_boneio_water_house": house,
+        "sensor.demo_boneio_water_garden": garden,
     }
 
 
