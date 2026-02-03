@@ -1,8 +1,8 @@
-# BoneIO Home Assistant Add-ons
+# boneIO Home Assistant Add-ons
 
-![BoneIO](https://boneio.eu/logo.png)
+![boneIO](https://boneio.eu/logo.png)
 
-Add this repository to your Home Assistant instance to install BoneIO add-ons.
+Add this repository to your Home Assistant instance to install boneIO add-ons.
 
 ## Add-ons
 

@@ -37,7 +37,6 @@
         "daily_regeneration": "bool",
         "daily_regeneration_time": "str"
     },
-    "image": "ghcr.io/boneio-eu/demo-data-generator-{arch}",
     "init": false,
     "timeout": 600
 }

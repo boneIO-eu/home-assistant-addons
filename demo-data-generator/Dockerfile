@@ -1,8 +1,16 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install Python and psycopg2
-RUN apk add --no-cache python3 py3-pip py3-psycopg2
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    jq \
+    postgresql-dev \
+    gcc \
+    musl-dev \
+    python3-dev \
+    && pip install --no-cache-dir psycopg2-binary \
+    && apk del gcc musl-dev python3-dev
 
 # Copy scripts
 COPY run.sh /
