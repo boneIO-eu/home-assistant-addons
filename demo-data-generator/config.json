@@ -38,5 +38,5 @@
         "daily_regeneration_time": "str"
     },
     "init": false,
-    "timeout": 600
+    "timeout": 300
 }
