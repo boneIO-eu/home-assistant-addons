@@ -1,6 +1,6 @@
 {
     "name": "Demo Data Generator",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "slug": "demo-data-generator",
     "description": "Generates realistic historical energy data for demo/showcase purposes",
     "url": "https://github.com/boneio-eu/home-assistant-addons",
