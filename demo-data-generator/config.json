@@ -1,0 +1,43 @@
+{
+    "name": "Demo Data Generator",
+    "version": "1.0.0",
+    "slug": "demo-data-generator",
+    "description": "Generates realistic historical energy data for demo/showcase purposes",
+    "url": "https://github.com/boneio-eu/home-assistant-addons",
+    "arch": [
+        "aarch64",
+        "amd64",
+        "armhf",
+        "armv7",
+        "i386"
+    ],
+    "startup": "application",
+    "boot": "auto",
+    "options": {
+        "db_host": "core-timescaledb",
+        "db_port": 5432,
+        "db_name": "homeassistant",
+        "db_user": "homeassistant",
+        "db_password": "homeassistant",
+        "energy_years": 2,
+        "power_days": 60,
+        "regenerate_on_start": true,
+        "daily_regeneration": true,
+        "daily_regeneration_time": "03:00"
+    },
+    "schema": {
+        "db_host": "str",
+        "db_port": "int",
+        "db_name": "str",
+        "db_user": "str",
+        "db_password": "password",
+        "energy_years": "float",
+        "power_days": "int",
+        "regenerate_on_start": "bool",
+        "daily_regeneration": "bool",
+        "daily_regeneration_time": "str"
+    },
+    "image": "ghcr.io/boneio-eu/demo-data-generator-{arch}",
+    "init": false,
+    "timeout": 600
+}
