@@ -1,0 +1,327 @@
+# ============================================
+# DEMO SENSORS PACKAGE - boneIO Energy Dashboard Demo
+# ============================================
+# Copy this file to /config/packages/demo_sensors.yaml
+# Then add to configuration.yaml:
+#   homeassistant:
+#     packages:
+#       demo_sensors: !include packages/demo_sensors.yaml
+# ============================================
+
+template:
+  - sensor:
+      # ============================================
+      # MASTER STATE SENSOR - Calculates all base values
+      # ============================================
+      - name: "Demo State"
+        unique_id: "demo_master_state"
+        state: "active"
+        attributes:
+          hour: "{{ now().hour }}"
+          minute: "{{ now().minute }}"
+          month: "{{ now().month }}"
+          weekday: "{{ now().weekday() }}"
+          
+          seasonal: >
+            {{ 0.3 + 0.7 * (0.5 + 0.5 * (((now().timetuple().tm_yday - 80) / 365 * 2 * 3.14159) | sin)) }}
+          
+          solar_power: >
+            {% set hour = now().hour + now().minute / 60 %}
+            {% set seasonal = 0.3 + 0.7 * (0.5 + 0.5 * (((now().timetuple().tm_yday - 80) / 365 * 2 * 3.14159) | sin)) %}
+            {% set solar_factor = [1 - ((hour - 12.5) / 7.5) ** 2, 0] | max if 6 <= hour <= 20 else 0 %}
+            {{ (6000 * seasonal * solar_factor) | round(0) }}
+          
+          heating_factor: >
+            {% set m = now().month %}
+            {% if m in [12, 1, 2] %}1.0
+            {% elif m in [3, 11] %}0.6
+            {% elif m in [4, 10] %}0.3
+            {% else %}0.1{% endif %}
+          
+          cooling_factor: >
+            {% set m = now().month %}
+            {% set h = now().hour %}
+            {% if m in [6, 7, 8] and 12 <= h <= 22 %}{{ 1 - ((h - 16) | abs) / 8 }}
+            {% else %}0{% endif %}
+          
+          consumption_base: >
+            {% set h = now().hour %}
+            {% if 6 <= h <= 9 %}2000
+            {% elif 17 <= h <= 21 %}2500
+            {% elif 9 < h < 17 %}1200
+            {% else %}600{% endif %}
+
+      # ============================================
+      # ENERGY SENSORS (kWh)
+      # ============================================
+      
+      - name: "Solar Production"
+        unique_id: "demo_solar_production"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set power = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {{ (power / 1000 * 0.0833) | round(3) }}
+
+      - name: "Battery Energy In"
+        unique_id: "demo_battery_in"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% set charge = [solar * 0.3, 2500] | min if solar > 2000 else 0 %}
+          {{ (charge / 1000 * 0.0833) | round(3) }}
+
+      - name: "Battery Energy Out"
+        unique_id: "demo_battery_out"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% set discharge = 1500 if 17 <= h <= 22 and solar < 1000 else (300 if h >= 22 or h < 6 else 0) %}
+          {{ (discharge / 1000 * 0.0833) | round(3) }}
+
+      - name: "Grid Consumption"
+        unique_id: "demo_grid_consumption"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set consumption = state_attr('sensor.demo_state', 'consumption_base') | float(1500) %}
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% set grid = [consumption - solar * 0.6, 0] | max %}
+          {{ (grid / 1000 * 0.0833) | round(3) }}
+
+      - name: "Grid Return"
+        unique_id: "demo_grid_return"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set consumption = state_attr('sensor.demo_state', 'consumption_base') | float(1500) %}
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% set excess = [solar - consumption - 2000, 0] | max %}
+          {{ (excess / 1000 * 0.0833) | round(3) }}
+
+      - name: "Heat Pump Energy"
+        unique_id: "demo_heat_pump_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set heating = state_attr('sensor.demo_state', 'heating_factor') | float(0.5) %}
+          {% set h = now().hour %}
+          {% set base = 1500 * heating if 6 <= h <= 21 else 800 * heating %}
+          {{ (base / 1000 * 0.0833) | round(3) }}
+
+      - name: "Induction Cooktop Energy"
+        unique_id: "demo_induction_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set m = now().minute %}
+          {% set cooking = 1 if (h == 7 and 20 <= m <= 50) or (h == 12 and m <= 40) or (h in [18,19] and ((h == 18 and m >= 30) or (h == 19 and m <= 30))) else 0 %}
+          {{ (1500 * cooking / 1000 * 0.0833) | round(3) }}
+
+      - name: "Water Heater Energy"
+        unique_id: "demo_boiler_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set base = 1200 if h in [6,7,8,19,20,21] else 100 %}
+          {{ (base / 1000 * 0.0833) | round(3) }}
+
+      - name: "Air Conditioning Energy"
+        unique_id: "demo_ac_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set cooling = state_attr('sensor.demo_state', 'cooling_factor') | float(0) %}
+          {{ (1500 * cooling / 1000 * 0.0833) | round(3) }}
+
+      - name: "Lighting Energy"
+        unique_id: "demo_lighting_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set base = 200 if 18 <= h <= 23 else (120 if 6 <= h <= 8 else 30) %}
+          {{ (base / 1000 * 0.0833) | round(3) }}
+
+      - name: "Washing Machine Energy"
+        unique_id: "demo_washing_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set m = now().minute %}
+          {% set wd = now().weekday() %}
+          {% set running = 1 if (wd >= 5 and h in [10,11,14,15]) or (wd < 5 and h == 19 and m <= 30) else 0 %}
+          {{ (800 * running / 1000 * 0.0833) | round(3) }}
+
+      - name: "EV Charger Energy"
+        unique_id: "demo_ev_charger_energy"
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set charging = 1 if h in [23, 0, 1, 2, 3, 4] else 0 %}
+          {{ (7000 * charging / 1000 * 0.0833) | round(3) }}
+
+      # ============================================
+      # POWER SENSORS (W)
+      # ============================================
+      
+      - name: "Solar Power"
+        unique_id: "demo_solar_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: "{{ state_attr('sensor.demo_state', 'solar_power') | float(0) | int }}"
+
+      - name: "Battery Power"
+        unique_id: "demo_battery_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% if solar > 2000 %}
+            {{ -([solar * 0.3, 2500] | min) | int }}
+          {% elif 17 <= h <= 22 %}
+            {{ 1500 }}
+          {% elif h >= 22 or h < 6 %}
+            {{ 300 }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+
+      - name: "Grid Power"
+        unique_id: "demo_grid_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set consumption = state_attr('sensor.demo_state', 'consumption_base') | float(1500) %}
+          {% set solar = state_attr('sensor.demo_state', 'solar_power') | float(0) %}
+          {% set battery = states('sensor.battery_power') | float(0) %}
+          {{ (consumption - solar * 0.6 - [battery, 0] | max) | int }}
+
+      - name: "Heat Pump Power"
+        unique_id: "demo_heat_pump_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set heating = state_attr('sensor.demo_state', 'heating_factor') | float(0.5) %}
+          {% set h = now().hour %}
+          {{ (1500 * heating if 6 <= h <= 21 else 800 * heating) | int }}
+
+      - name: "Induction Cooktop Power"
+        unique_id: "demo_induction_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {% set m = now().minute %}
+          {% if h == 7 and 20 <= m <= 50 %}1200
+          {% elif h == 12 and m <= 40 %}1800
+          {% elif h in [18,19] and ((h == 18 and m >= 30) or (h == 19 and m <= 30)) %}2200
+          {% else %}0{% endif %}
+
+      - name: "Water Heater Power"
+        unique_id: "demo_boiler_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {{ 1500 if h in [6,7,8,19,20,21] else 100 }}
+
+      - name: "Air Conditioning Power"
+        unique_id: "demo_ac_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set cooling = state_attr('sensor.demo_state', 'cooling_factor') | float(0) %}
+          {{ (2000 * cooling) | int }}
+
+      - name: "Lighting Power"
+        unique_id: "demo_lighting_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {{ 250 if 18 <= h <= 23 else (150 if 6 <= h <= 8 else 40) }}
+
+      - name: "Washing Machine Power"
+        unique_id: "demo_washing_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {% set m = now().minute %}
+          {% set wd = now().weekday() %}
+          {% if (wd >= 5 and h in [10,11,14,15]) or (wd < 5 and h == 19 and m <= 30) %}1000{% else %}0{% endif %}
+
+      - name: "EV Charger Power"
+        unique_id: "demo_ev_power"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {% set h = now().hour %}
+          {{ 7000 if h in [23, 0, 1, 2, 3, 4] else 0 }}
+
+      # ============================================
+      # WATER SENSORS (L)
+      # ============================================
+      
+      - name: "Water Consumption"
+        unique_id: "demo_water_consumption"
+        unit_of_measurement: "L"
+        device_class: water
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set base = 20 if 7 <= h <= 9 else (15 if 18 <= h <= 21 else 3) %}
+          {{ (base * 0.0833) | round(2) }}
+
+      - name: "House Water"
+        unique_id: "demo_house_water"
+        unit_of_measurement: "L"
+        device_class: water
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set base = 18 if 7 <= h <= 9 else (13 if 18 <= h <= 21 else 2.5) %}
+          {{ (base * 0.0833) | round(2) }}
+
+      - name: "Garden Water"
+        unique_id: "demo_garden_water"
+        unit_of_measurement: "L"
+        device_class: water
+        state_class: total_increasing
+        state: >
+          {% set h = now().hour %}
+          {% set m = now().month %}
+          {% set summer = 1 if m in [5,6,7,8,9] else 0 %}
+          {% set watering = 1 if h in [6,7,19,20] else 0 %}
+          {{ (25 * summer * watering * 0.0833) | round(2) }}

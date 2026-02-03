@@ -10,6 +10,7 @@ RUN apk add --no-cache \
 # Copy scripts
 COPY run.sh /
 COPY regenerate_demo_data.py /
+COPY demo_sensors.yaml /
 
 RUN chmod a+x /run.sh
 

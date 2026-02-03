@@ -4,39 +4,52 @@ Generates realistic historical energy and power statistics for Home Assistant En
 
 ## Features
 
-- **Energy Statistics**: Generates 2 years of hourly energy data (kWh) for solar, battery, grid, and device sensors
-- **Power Statistics**: Generates 60 days of 5-minute power data (W) for Power Sources graph
-- **Synchronized Data**: All sensors derive from a master calculation for realistic, consistent data
-- **Automatic Regeneration**: Runs on startup and optionally daily to ensure fresh data
-- **TimescaleDB Support**: Works with the official TimescaleDB add-on
+- **Automatic Sensor Installation**: Installs 24 demo sensors on first run
+- **Energy Statistics**: Generates 2 years of hourly energy data (kWh)
+- **Power Statistics**: Generates 60 days of 5-minute power data (W)
+- **Synchronized Data**: All sensors derive from master calculation for consistency
+- **Daily Regeneration**: Optionally regenerate data daily at scheduled time
 
-## Sensors Generated
-
-### Energy Sensors (kWh)
-- Solar Production
-- Battery In/Out
-- Grid Consumption/Return
-- Heat Pump, Induction Cooktop, Water Heater
-- Air Conditioning, Lighting, Washing Machine, EV Charger
-- Water Consumption (House + Garden)
-
-### Power Sensors (W)
-- Solar Power
-- Battery Power
-- Grid Power
-- Individual device power (7 devices)
-
-## Requirements
-
-1. **TimescaleDB Add-on** must be installed and running
-2. **Home Assistant recorder** configured to use TimescaleDB
-
-## Usage
+## Quick Start
 
 1. Install and start the add-on
-2. Wait for initial data generation (takes 2-3 minutes)
-3. Open Energy Dashboard - you'll see 2 years of history!
+2. Check the logs - it will install sensor package automatically
+3. Add to your `configuration.yaml`:
+   ```yaml
+   homeassistant:
+     packages:
+       demo_sensors: !include packages/demo_sensors.yaml
+   ```
+4. Restart Home Assistant
+5. Configure Energy Dashboard with the new sensors
+
+## Sensors Included
+
+### Energy (kWh)
+- Solar Production, Battery In/Out, Grid Consumption/Return
+- Heat Pump, Induction Cooktop, Water Heater, AC
+- Lighting, Washing Machine, EV Charger
+- Water Consumption (House + Garden)
+
+### Power (W)
+- Solar, Battery, Grid Power
+- Individual device power (7 devices)
+
+## Configuration
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| db_host | core-timescaledb | TimescaleDB hostname |
+| db_port | 5432 | Database port |
+| db_name | homeassistant | Database name |
+| db_user | homeassistant | Database user |
+| db_password | homeassistant | Database password |
+| energy_years | 2 | Years of energy history to generate |
+| power_days | 60 | Days of power history to generate |
+| regenerate_on_start | true | Regenerate data on add-on start |
+| daily_regeneration | true | Enable daily regeneration |
+| daily_regeneration_time | 03:00 | Time for daily regeneration |
 
 ## Support
 
-For issues, please visit: https://github.com/boneio-eu/home-assistant-addons/issues
+For issues: https://github.com/boneio-eu/home-assistant-addons/issues

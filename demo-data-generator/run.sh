@@ -17,6 +17,24 @@ DAILY_TIME=$(bashio::config 'daily_regeneration_time')
 
 DB_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 
+# Install sensor package if not exists
+PACKAGE_DIR="/config/packages"
+PACKAGE_FILE="${PACKAGE_DIR}/demo_sensors.yaml"
+SOURCE_FILE="/demo_sensors.yaml"
+
+if [ ! -f "${PACKAGE_FILE}" ]; then
+    bashio::log.info "Installing demo sensors package..."
+    mkdir -p "${PACKAGE_DIR}"
+    cp "${SOURCE_FILE}" "${PACKAGE_FILE}"
+    bashio::log.warning "Sensor package installed! Please restart Home Assistant to activate sensors."
+    bashio::log.warning "Then add to configuration.yaml:"
+    bashio::log.warning "  homeassistant:"
+    bashio::log.warning "    packages:"
+    bashio::log.warning "      demo_sensors: !include packages/demo_sensors.yaml"
+else
+    bashio::log.info "Sensor package already installed."
+fi
+
 bashio::log.info "Demo Data Generator starting..."
 bashio::log.info "Database: ${DB_HOST}:${DB_PORT}/${DB_NAME}"
 bashio::log.info "Energy years: ${ENERGY_YEARS}, Power days: ${POWER_DAYS}"
