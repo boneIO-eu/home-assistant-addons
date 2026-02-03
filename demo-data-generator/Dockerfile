@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     gcc \
     musl-dev \
     python3-dev \
-    && pip install --no-cache-dir psycopg2-binary \
+    py3-pip \
+    && pip3 install --no-cache-dir --break-system-packages psycopg2-binary \
     && apk del gcc musl-dev python3-dev
 
 # Copy scripts
