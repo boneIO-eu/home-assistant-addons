@@ -38,6 +38,14 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
         proxy_set_header X-Real-IP \$remote_addr;
 
         include /etc/nginx/includes/proxy_params.conf;
+
+        # Rewrite absolute paths in HTML so assets load through proxy
+        sub_filter_types text/html application/javascript;
+        sub_filter_once off;
+        sub_filter 'src=\"/assets/' 'src=\"${INGRESS_ENTRY}/proxy/${i}/assets/';
+        sub_filter 'href=\"/assets/' 'href=\"${INGRESS_ENTRY}/proxy/${i}/assets/';
+        sub_filter 'href=\"/manifest' 'href=\"${INGRESS_ENTRY}/proxy/${i}/manifest';
+        sub_filter '\"/assets/' '\"${INGRESS_ENTRY}/proxy/${i}/assets/';
     }
 "
 done
