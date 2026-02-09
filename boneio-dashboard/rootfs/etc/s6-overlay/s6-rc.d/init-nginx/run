@@ -38,9 +38,6 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
         proxy_set_header X-Real-IP \$remote_addr;
 
         include /etc/nginx/includes/proxy_params.conf;
-
-        # Rewrite redirects from backend
-        proxy_redirect ${DEVICE_URL}/ ${INGRESS_ENTRY}/proxy/${i}/;
     }
 "
 done
@@ -76,7 +73,6 @@ server {
 
         sub_filter '__INGRESS_ENTRY__' '${INGRESS_ENTRY}';
         sub_filter_once off;
-        sub_filter_types text/html;
     }
 
     # Dashboard static assets
