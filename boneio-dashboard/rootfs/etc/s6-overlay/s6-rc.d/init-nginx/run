@@ -28,7 +28,7 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     
     PROXY_LOCATIONS="${PROXY_LOCATIONS}
     # Device ${i}: ${DEVICE_NAME}
-    location ${INGRESS_ENTRY}/proxy/${i}/ {
+    location /proxy/${i}/ {
         allow   172.30.32.2;
         deny    all;
 
@@ -64,7 +64,7 @@ server {
     include /etc/nginx/includes/server_params.conf;
 
     # Dashboard page
-    location ${INGRESS_ENTRY}/ {
+    location / {
         allow   172.30.32.2;
         deny    all;
 
@@ -76,7 +76,7 @@ server {
     }
 
     # Dashboard static assets
-    location ${INGRESS_ENTRY}/static/ {
+    location /static/ {
         allow   172.30.32.2;
         deny    all;
 
@@ -84,7 +84,7 @@ server {
     }
 
     # Devices JSON API
-    location ${INGRESS_ENTRY}/api/devices {
+    location /api/devices {
         allow   172.30.32.2;
         deny    all;
 
