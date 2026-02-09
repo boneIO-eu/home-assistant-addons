@@ -1,0 +1,103 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Generate nginx configuration from addon options
+# ==============================================================================
+
+bashio::log.info "Generating nginx configuration..."
+
+INGRESS_ENTRY=$(bashio::addon.ingress_entry)
+INGRESS_PORT=5000
+
+mkdir -p /etc/nginx/servers
+
+# Read devices from config and generate proxy locations
+DEVICE_COUNT=$(bashio::config 'devices | length')
+bashio::log.info "Found ${DEVICE_COUNT} device(s) in configuration"
+
+# Build proxy locations
+PROXY_LOCATIONS=""
+for i in $(seq 0 $((DEVICE_COUNT - 1))); do
+    DEVICE_NAME=$(bashio::config "devices[${i}].name")
+    DEVICE_URL=$(bashio::config "devices[${i}].url")
+    
+    bashio::log.info "  Device ${i}: ${DEVICE_NAME} -> ${DEVICE_URL}"
+    
+    # Strip trailing slash from URL
+    DEVICE_URL="${DEVICE_URL%/}"
+    
+    PROXY_LOCATIONS="${PROXY_LOCATIONS}
+    # Device ${i}: ${DEVICE_NAME}
+    location ${INGRESS_ENTRY}/proxy/${i}/ {
+        allow   172.30.32.2;
+        deny    all;
+
+        proxy_pass ${DEVICE_URL}/;
+        proxy_set_header Host \$http_host;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP \$remote_addr;
+
+        include /etc/nginx/includes/proxy_params.conf;
+
+        # Rewrite redirects from backend
+        proxy_redirect ${DEVICE_URL}/ ${INGRESS_ENTRY}/proxy/${i}/;
+    }
+"
+done
+
+# Generate devices JSON for the dashboard page
+DEVICES_JSON="["
+for i in $(seq 0 $((DEVICE_COUNT - 1))); do
+    DEVICE_NAME=$(bashio::config "devices[${i}].name")
+    if [ "$i" -gt 0 ]; then
+        DEVICES_JSON="${DEVICES_JSON},"
+    fi
+    DEVICES_JSON="${DEVICES_JSON}{\"name\":\"${DEVICE_NAME}\",\"path\":\"${INGRESS_ENTRY}/proxy/${i}/\"}"
+done
+DEVICES_JSON="${DEVICES_JSON}]"
+
+# Write devices JSON for the dashboard
+echo "${DEVICES_JSON}" > /www/devices.json
+
+# Generate nginx server config
+cat > /etc/nginx/servers/ingress.conf << EOF
+server {
+    listen ${INGRESS_PORT} default_server;
+
+    include /etc/nginx/includes/server_params.conf;
+
+    # Dashboard page
+    location ${INGRESS_ENTRY}/ {
+        allow   172.30.32.2;
+        deny    all;
+
+        root /www;
+        try_files /index.html =404;
+
+        sub_filter '__INGRESS_ENTRY__' '${INGRESS_ENTRY}';
+        sub_filter_once off;
+        sub_filter_types text/html;
+    }
+
+    # Dashboard static assets
+    location ${INGRESS_ENTRY}/static/ {
+        allow   172.30.32.2;
+        deny    all;
+
+        alias /www/static/;
+    }
+
+    # Devices JSON API
+    location ${INGRESS_ENTRY}/api/devices {
+        allow   172.30.32.2;
+        deny    all;
+
+        alias /www/devices.json;
+        default_type application/json;
+    }
+
+    ${PROXY_LOCATIONS}
+}
+EOF
+
+bashio::log.info "Nginx configuration generated successfully"
