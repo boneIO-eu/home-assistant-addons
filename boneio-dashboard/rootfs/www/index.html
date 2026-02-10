@@ -168,6 +168,39 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .device-item .external-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            color: var(--sidebar-text-muted);
+            transition: color 0.15s, background 0.15s;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+
+        .device-item .external-link:hover {
+            color: var(--accent);
+            background: rgba(255,255,255,0.08);
+        }
+
+        [data-theme="light"] .device-item .external-link:hover {
+            background: rgba(0,0,0,0.06);
+        }
+
+        .device-item .external-link svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .sidebar.collapsed .device-item .external-link {
+            display: none;
         }
 
         /* Toggle button */
@@ -445,8 +478,14 @@
                 item.innerHTML = `
                     <span class="dot"></span>
                     <span class="name">${escapeHtml(device.name)}</span>
+                    <a class="external-link" href="${escapeHtml(device.url)}" target="_blank" rel="noopener noreferrer" title="Open ${escapeHtml(device.name)} directly">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7zm-2 16H5V7h7V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h-2v7H5z"/></svg>
+                    </a>
                 `;
-                item.addEventListener('click', () => selectDevice(index));
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.external-link')) return;
+                    selectDevice(index);
+                });
                 list.appendChild(item);
             });
         }

@@ -56,7 +56,8 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     if [ "$i" -gt 0 ]; then
         DEVICES_JSON="${DEVICES_JSON},"
     fi
-    DEVICES_JSON="${DEVICES_JSON}{\"name\":\"${DEVICE_NAME}\",\"path\":\"${INGRESS_ENTRY}/proxy/${i}/\"}"
+    DEVICE_URL_JSON=$(bashio::config "devices[${i}].url")
+    DEVICES_JSON="${DEVICES_JSON}{\"name\":\"${DEVICE_NAME}\",\"path\":\"${INGRESS_ENTRY}/proxy/${i}/\",\"url\":\"${DEVICE_URL_JSON}\"}"
 done
 DEVICES_JSON="${DEVICES_JSON}]"
 
