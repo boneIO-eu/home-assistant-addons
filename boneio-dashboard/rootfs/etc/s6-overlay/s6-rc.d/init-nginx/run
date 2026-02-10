@@ -7,7 +7,7 @@
 bashio::log.info "Generating nginx configuration..."
 
 INGRESS_ENTRY=$(bashio::addon.ingress_entry)
-INGRESS_PORT=5000
+INGRESS_PORT=$(bashio::addon.ingress_port)
 
 mkdir -p /etc/nginx/servers
 
@@ -39,13 +39,12 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
 
         include /etc/nginx/includes/proxy_params.conf;
 
-        # Rewrite absolute paths in HTML so assets load through proxy
-        sub_filter_types text/html application/javascript;
+        # Inject base path for boneIO frontend and rewrite absolute paths
+        sub_filter_types application/javascript;
         sub_filter_once off;
-        sub_filter 'src=\"/assets/' 'src=\"${INGRESS_ENTRY}/proxy/${i}/assets/';
-        sub_filter 'href=\"/assets/' 'href=\"${INGRESS_ENTRY}/proxy/${i}/assets/';
-        sub_filter 'href=\"/manifest' 'href=\"${INGRESS_ENTRY}/proxy/${i}/manifest';
+        sub_filter '</head>' '<script>window.__BONEIO_BASE_PATH__=\"${INGRESS_ENTRY}/proxy/${i}\";</script></head>';
         sub_filter '\"/assets/' '\"${INGRESS_ENTRY}/proxy/${i}/assets/';
+        sub_filter '\"/manifest' '\"${INGRESS_ENTRY}/proxy/${i}/manifest';
     }
 "
 done
