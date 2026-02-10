@@ -13,6 +13,11 @@
 
         :root {
             --sidebar-width: 220px;
+            --sidebar-collapsed: 48px;
+        }
+
+        /* Dark theme (default) */
+        [data-theme="dark"] {
             --sidebar-bg: #1c1c1c;
             --sidebar-hover: #2a2a2a;
             --sidebar-active: #3a3a3a;
@@ -20,12 +25,25 @@
             --sidebar-text-muted: #888;
             --accent: #4fc3f7;
             --border: #333;
+            --bg: #111;
+        }
+
+        /* Light theme */
+        [data-theme="light"] {
+            --sidebar-bg: #f5f5f5;
+            --sidebar-hover: #e8e8e8;
+            --sidebar-active: #ddd;
+            --sidebar-text: #1a1a1a;
+            --sidebar-text-muted: #666;
+            --accent: #0288d1;
+            --border: #ddd;
+            --bg: #fff;
         }
 
         html, body {
             height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #111;
+            background: var(--bg);
             color: var(--sidebar-text);
             overflow: hidden;
         }
@@ -44,14 +62,21 @@
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            transition: width 0.2s ease, min-width 0.2s ease;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+            min-width: var(--sidebar-collapsed);
         }
 
         .sidebar-header {
-            padding: 16px;
+            padding: 12px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 10px;
+            min-height: 52px;
         }
 
         .sidebar-header svg {
@@ -59,6 +84,18 @@
             height: 28px;
             fill: var(--accent);
             flex-shrink: 0;
+        }
+
+        .sidebar-header .header-text {
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity 0.15s ease;
+        }
+
+        .sidebar.collapsed .header-text {
+            opacity: 0;
+            width: 0;
         }
 
         .sidebar-header h1 {
@@ -87,6 +124,22 @@
             transition: background 0.15s;
             border-left: 3px solid transparent;
             user-select: none;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .device-item {
+            justify-content: center;
+            padding: 12px 0;
+        }
+
+        .sidebar.collapsed .device-item .name {
+            display: none;
+        }
+
+        .sidebar.collapsed .device-item .dot {
+            width: 10px;
+            height: 10px;
         }
 
         .device-item:hover {
@@ -117,12 +170,53 @@
             text-overflow: ellipsis;
         }
 
+        /* Toggle button */
+        .sidebar-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--sidebar-text-muted);
+            transition: color 0.15s, background 0.15s;
+            border-top: 1px solid var(--border);
+            user-select: none;
+            font-size: 18px;
+            min-height: 40px;
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--sidebar-text);
+            background: var(--sidebar-hover);
+        }
+
+        .sidebar-toggle svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar.collapsed .sidebar-toggle svg {
+            transform: rotate(180deg);
+        }
+
         .sidebar-footer {
             padding: 12px 16px;
             border-top: 1px solid var(--border);
             font-size: 11px;
             color: var(--sidebar-text-muted);
             text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: opacity 0.15s ease;
+        }
+
+        .sidebar.collapsed .sidebar-footer {
+            opacity: 0;
+            padding: 0;
+            height: 0;
+            border: none;
         }
 
         /* Main content */
@@ -137,7 +231,7 @@
             flex: 1;
             width: 100%;
             border: none;
-            background: #111;
+            background: var(--bg);
         }
 
         /* Empty state */
@@ -183,44 +277,114 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Mobile: sidebar collapses */
+        /* Mobile hamburger button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            z-index: 200;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: var(--sidebar-bg);
+            color: var(--accent);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        .mobile-menu-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Backdrop overlay */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 299;
+        }
+
         @media (max-width: 768px) {
-            :root {
-                --sidebar-width: 56px;
+            .mobile-menu-btn {
+                display: flex;
             }
 
-            .sidebar-header h1,
-            .sidebar-header span,
-            .device-item .name,
-            .sidebar-footer {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 300;
+                width: var(--sidebar-width);
+                min-width: var(--sidebar-width);
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                box-shadow: 4px 0 16px rgba(0,0,0,0.5);
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-width);
+                min-width: var(--sidebar-width);
+            }
+
+            .sidebar.collapsed .header-text,
+            .sidebar.collapsed .device-item .name {
+                opacity: 1;
+                width: auto;
+                display: initial;
+            }
+
+            .sidebar.collapsed .device-item {
+                justify-content: initial;
+                padding: 10px 16px;
+            }
+
+            .sidebar.collapsed .device-item .dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-backdrop.visible {
+                display: block;
+            }
+
+            .sidebar-toggle {
                 display: none;
             }
 
-            .sidebar-header {
-                justify-content: center;
-                padding: 12px 8px;
-            }
-
-            .device-item {
-                justify-content: center;
-                padding: 12px 8px;
-            }
-
-            .device-item .dot {
-                width: 12px;
-                height: 12px;
+            .main {
+                padding-top: 0;
             }
         }
     </style>
 </head>
 <body>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+    </button>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="layout">
         <nav class="sidebar">
             <div class="sidebar-header">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
-                <div>
+                <div class="header-text">
                     <h1>boneIO</h1>
                     <span>Dashboard</span>
                 </div>
@@ -228,8 +392,10 @@
             <div class="device-list" id="deviceList">
                 <!-- Devices populated by JS -->
             </div>
-            <div class="sidebar-footer">
-                boneIO Dashboard v1.0
+            <div class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                </svg>
             </div>
         </nav>
         <main class="main" id="mainContent">
@@ -292,6 +458,9 @@
             if (index === activeIndex) return;
             activeIndex = index;
 
+            // Close mobile drawer if open
+            closeMobileDrawer();
+
             // Update sidebar active state
             document.querySelectorAll('.device-item').forEach((el, i) => {
                 el.classList.toggle('active', i === index);
@@ -318,7 +487,8 @@
 
             // Create iframe
             const iframe = document.createElement('iframe');
-            iframe.src = device.path;
+            const sep = device.path.includes('?') ? '&' : '?';
+            iframe.src = device.path + sep + 'theme=' + currentTheme;
             iframe.addEventListener('load', () => {
                 const loadingEl = main.querySelector('.loading');
                 if (loadingEl) loadingEl.remove();
@@ -335,7 +505,65 @@
             return div.innerHTML;
         }
 
+        /**
+         * Toggle sidebar collapsed state (desktop) and mobile drawer.
+         */
+        function initSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const stored = localStorage.getItem('boneio-sidebar-collapsed');
+
+            if (stored === 'true') {
+                sidebar.classList.add('collapsed');
+            }
+
+            // Desktop toggle
+            toggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem(
+                    'boneio-sidebar-collapsed',
+                    sidebar.classList.contains('collapsed')
+                );
+            });
+
+            // Mobile drawer open
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.add('mobile-open');
+                backdrop.classList.add('visible');
+            });
+
+            // Mobile drawer close
+            backdrop.addEventListener('click', closeMobileDrawer);
+        }
+
+        function closeMobileDrawer() {
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.remove('mobile-open');
+            backdrop.classList.remove('visible');
+        }
+
+        /**
+         * Detect theme from HA (prefers-color-scheme) and apply.
+         */
+        let currentTheme = 'dark';
+
+        function initTheme() {
+            const mq = window.matchMedia('(prefers-color-scheme: light)');
+            currentTheme = mq.matches ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+
+            mq.addEventListener('change', (e) => {
+                currentTheme = e.matches ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', currentTheme);
+            });
+        }
+
         // Initialize
+        initTheme();
+        initSidebar();
         loadDevices();
     </script>
 </body>
