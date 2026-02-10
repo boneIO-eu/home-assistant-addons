@@ -45,14 +45,14 @@ template:
             {% else %}0{% endif %}
 
       # ============================================
-      # ENERGY SENSORS (kWh) - state_class: total for demo
+      # ENERGY SENSORS (kWh) - state_class: total_increasing
       # ============================================
       
       - name: "Demo BoneIO Solar Production"
         unique_id: "demo_boneio_solar_production"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set power = state_attr('sensor.demo_boneio_state', 'solar_power') | float(0) %}
           {{ (power / 1000 * 0.0833) | round(3) }}
@@ -61,7 +61,7 @@ template:
         unique_id: "demo_boneio_battery_energy_in"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set solar = state_attr('sensor.demo_boneio_state', 'solar_power') | float(0) %}
           {% set charge = [solar * 0.3, 2500] | min if solar > 2000 else 0 %}
@@ -71,7 +71,7 @@ template:
         unique_id: "demo_boneio_battery_energy_out"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set solar = state_attr('sensor.demo_boneio_state', 'solar_power') | float(0) %}
@@ -82,7 +82,7 @@ template:
         unique_id: "demo_boneio_grid_consumption"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set solar = state_attr('sensor.demo_boneio_state', 'solar_power') | float(0) %}
           {% set devices = states('sensor.demo_boneio_heat_pump_power') | float(0) + states('sensor.demo_boneio_induction_power') | float(0) + states('sensor.demo_boneio_water_heater_power') | float(0) + states('sensor.demo_boneio_ac_power') | float(0) + states('sensor.demo_boneio_lighting_power') | float(0) + states('sensor.demo_boneio_washing_power') | float(0) + states('sensor.demo_boneio_ev_power') | float(0) + 150 %}
@@ -95,7 +95,7 @@ template:
         unique_id: "demo_boneio_grid_return"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set solar = state_attr('sensor.demo_boneio_state', 'solar_power') | float(0) %}
           {% set devices = 2000 %}
@@ -106,7 +106,7 @@ template:
         unique_id: "demo_boneio_heat_pump_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set heating = state_attr('sensor.demo_boneio_state', 'heating_factor') | float(0.5) %}
           {% set h = now().hour %}
@@ -117,7 +117,7 @@ template:
         unique_id: "demo_boneio_induction_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set m = now().minute %}
@@ -128,7 +128,7 @@ template:
         unique_id: "demo_boneio_water_heater_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set base = 1200 if h in [6,7,8,19,20,21] else 80 %}
@@ -138,7 +138,7 @@ template:
         unique_id: "demo_boneio_ac_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set cooling = state_attr('sensor.demo_boneio_state', 'cooling_factor') | float(0) %}
           {{ (1500 * cooling / 1000 * 0.0833) | round(3) }}
@@ -147,7 +147,7 @@ template:
         unique_id: "demo_boneio_lighting_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set base = 200 if 18 <= h <= 23 else (120 if 6 <= h <= 8 else 30) %}
@@ -157,7 +157,7 @@ template:
         unique_id: "demo_boneio_washing_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set wd = now().weekday() %}
@@ -168,7 +168,7 @@ template:
         unique_id: "demo_boneio_ev_energy"
         unit_of_measurement: "kWh"
         device_class: energy
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set charging = 1 if h in [23, 0, 1, 2, 3, 4] else 0 %}
@@ -295,7 +295,7 @@ template:
         unique_id: "demo_boneio_water_total"
         unit_of_measurement: "L"
         device_class: water
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set base = 20 if 7 <= h <= 9 else (15 if 18 <= h <= 21 else 3) %}
@@ -305,7 +305,7 @@ template:
         unique_id: "demo_boneio_water_house"
         unit_of_measurement: "L"
         device_class: water
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set base = 18 if 7 <= h <= 9 else (13 if 18 <= h <= 21 else 2.5) %}
@@ -315,7 +315,7 @@ template:
         unique_id: "demo_boneio_water_garden"
         unit_of_measurement: "L"
         device_class: water
-        state_class: total
+        state_class: total_increasing
         state: >
           {% set h = now().hour %}
           {% set m = now().month %}

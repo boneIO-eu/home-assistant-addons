@@ -326,7 +326,7 @@ def generate_energy_statistics(start: datetime, end: datetime, meta_ids: dict) -
                 continue
             
             sums[sensor_id] += value
-            stats.append((ts, meta_ids[sensor_id], ts, None, None, None, None, value, sums[sensor_id]))
+            stats.append((ts, meta_ids[sensor_id], ts, None, None, None, None, sums[sensor_id], sums[sensor_id]))
         
         current += timedelta(hours=1)
         i += 1
@@ -403,7 +403,11 @@ def insert_energy_stats(conn, stats: list, meta_ids: dict):
             cursor,
             """INSERT INTO statistics 
             (created_ts, metadata_id, start_ts, mean, min, max, last_reset_ts, state, sum)
-            VALUES %s""",
+            VALUES %s
+            ON CONFLICT (metadata_id, start_ts) DO UPDATE SET
+                state = EXCLUDED.state,
+                sum = EXCLUDED.sum,
+                created_ts = EXCLUDED.created_ts""",
             batch
         )
         if (i + batch_size) % 50000 == 0:
