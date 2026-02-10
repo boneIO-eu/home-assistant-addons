@@ -9,7 +9,7 @@ init: false
 ingress: true
 ingress_port: 5100
 ingress_entry: /
-panel_icon: "mdi:view-dashboard-variant"
+panel_icon: "mdi:alpha-b-circle-outline"
 panel_title: boneIO Black
 panel_admin: false
 host_network: true
