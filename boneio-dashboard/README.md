@@ -26,9 +26,9 @@ This addon creates an nginx reverse proxy that:
 
 ```yaml
 devices:
-  - name: "Living Room"
+  - name: "Black 1"
     url: "http://192.168.1.10:8090"
-  - name: "Kitchen"
+  - name: "Black 2"
     url: "https://blk123456.black.boneio.app:8443"
 ```
 

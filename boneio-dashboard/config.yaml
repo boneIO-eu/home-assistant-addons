@@ -1,6 +1,6 @@
-name: boneIO Dashboard
-version: 1.0.4
-slug: boneio-dashboard
+name: boneIO Black Dashboard
+version: 1.0.5
+slug: boneio--black-dashboard
 description: Multi-device dashboard for boneIO Black controllers. Access all your boneIO devices from a single panel in Home Assistant.
 url: "https://github.com/boneio-eu/home-assistant-addons"
 startup: application
@@ -10,7 +10,7 @@ ingress: true
 ingress_port: 5100
 ingress_entry: /
 panel_icon: "mdi:view-dashboard-variant"
-panel_title: boneIO
+panel_title: boneIO Black
 panel_admin: false
 host_network: true
 arch:
@@ -22,7 +22,7 @@ arch:
 options:
   devices:
     - name: "boneIO Black 1"
-      url: "http://192.168.1.100:8090"
+      url: "https://192.168.1.100:8443"
 schema:
   devices:
     - name: str

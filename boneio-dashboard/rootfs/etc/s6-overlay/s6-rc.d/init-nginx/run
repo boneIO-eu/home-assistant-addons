@@ -40,7 +40,7 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
         include /etc/nginx/includes/proxy_params.conf;
 
         # Inject base path for boneIO frontend and rewrite absolute paths
-        sub_filter_types application/javascript;
+        sub_filter_types text/html application/javascript;
         sub_filter_once off;
         sub_filter '</head>' '<script>window.__BONEIO_BASE_PATH__=\"${INGRESS_ENTRY}/proxy/${i}\";</script></head>';
         sub_filter '\"/assets/' '\"${INGRESS_ENTRY}/proxy/${i}/assets/';
