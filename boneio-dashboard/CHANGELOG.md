@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.11
+
+### Bug Fixes
+- Added `Cache-Control: no-store` headers to dashboard HTML, devices JSON API, and proxied responses
+- Prevents Cloudflare Tunnel from caching stale addon pages and device configurations
+- Fixes issue where addon showed outdated device URLs and old frontend versions after config changes
+
 ## 1.0.10
 
 ### Bug Fixes

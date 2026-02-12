@@ -48,6 +48,9 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
         sub_filter '\"/manifest' '\"${INGRESS_ENTRY}/proxy/${i}/manifest';
         sub_filter '\"/boneio' '\"${INGRESS_ENTRY}/proxy/${i}/boneio';
         sub_filter '\"/sw.js' '\"${INGRESS_ENTRY}/proxy/${i}/sw.js';
+
+        # Prevent Cloudflare Tunnel from caching proxied HTML
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
     }
 "
 done
@@ -82,6 +85,8 @@ server {
         root /www;
         try_files /index.html =404;
 
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+
         sub_filter '__INGRESS_ENTRY__' '${INGRESS_ENTRY}';
         sub_filter_once off;
     }
@@ -101,6 +106,7 @@ server {
 
         alias /www/devices.json;
         default_type application/json;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
     }
 
     ${PROXY_LOCATIONS}
