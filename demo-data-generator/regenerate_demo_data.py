@@ -239,20 +239,27 @@ def calculate_energy(dt: datetime, power: dict) -> dict:
 
 
 def calculate_water(dt: datetime) -> dict:
-    """Calculate hourly water consumption (L)."""
+    """Calculate hourly water consumption (L) with daily variation."""
     h = dt.hour
     m = dt.month
     
+    # Deterministic daily variation based on day of year
+    day_seed = dt.timetuple().tm_yday + dt.year * 1000
+    rng = random.Random(day_seed)
+    daily_factor = rng.uniform(0.7, 1.4)     # ±30% daily variation
+    hour_jitter = rng.gauss(1.0, 0.1)        # small hourly noise
+    
     if 7 <= h <= 9:
-        house = 18
+        house = 18 * daily_factor * hour_jitter
     elif 18 <= h <= 21:
-        house = 13
+        house = 13 * daily_factor * hour_jitter
     else:
-        house = 2.5
+        house = 2.5 * daily_factor * hour_jitter
+    house = max(0.5, house)  # minimum
     
     summer = m in [5, 6, 7, 8, 9]
     watering = h in [6, 7, 19, 20]
-    garden = 25 if summer and watering else 0
+    garden = 25 * daily_factor if summer and watering else 0
     
     return {
         "sensor.demo_boneio_water_total": house + garden,
@@ -371,79 +378,87 @@ def generate_power_statistics(start: datetime, end: datetime, meta_ids: dict) ->
 
 
 def insert_energy_stats(conn, stats: list, meta_ids: dict):
-    """Insert energy statistics."""
+    """Insert energy statistics (atomic: DELETE+INSERT in one transaction)."""
     cursor = conn.cursor()
     
-    print("  Clearing old energy stats...")
-    # Get ALL metadata_ids for energy sensors from DB
-    sensor_names = tuple(ENERGY_SENSORS.keys())
-    cursor.execute(
-        "SELECT id FROM statistics_meta WHERE statistic_id IN %s",
-        (sensor_names,)
-    )
-    all_meta_ids = [row[0] for row in cursor.fetchall()]
-    
-    for meta_id in all_meta_ids:
-        cursor.execute("DELETE FROM statistics WHERE metadata_id = %s", (meta_id,))
-    conn.commit()
-    print(f"    Cleared {len(all_meta_ids)} sensors")
-    
-    # Deduplicate stats (keep last occurrence)
-    seen = {}
-    for s in stats:
-        key = (s[1], s[2])  # (metadata_id, start_ts)
-        seen[key] = s
-    unique_stats = list(seen.values())
-    
-    print(f"  Inserting {len(unique_stats)} records (deduped from {len(stats)})...")
-    batch_size = 5000
-    for i in range(0, len(unique_stats), batch_size):
-        batch = unique_stats[i:i + batch_size]
-        execute_values(
-            cursor,
-            """INSERT INTO statistics 
-            (created_ts, metadata_id, start_ts, mean, min, max, last_reset_ts, state, sum)
-            VALUES %s
-            ON CONFLICT (metadata_id, start_ts) DO UPDATE SET
-                state = EXCLUDED.state,
-                sum = EXCLUDED.sum,
-                created_ts = EXCLUDED.created_ts""",
-            batch
+    try:
+        print("  Clearing old energy stats...")
+        # Get ALL metadata_ids for energy sensors from DB
+        sensor_names = tuple(ENERGY_SENSORS.keys())
+        cursor.execute(
+            "SELECT id FROM statistics_meta WHERE statistic_id IN %s",
+            (sensor_names,)
         )
-        if (i + batch_size) % 50000 == 0:
-            print(f"    Inserted {i + len(batch)}/{len(unique_stats)}...")
-    
-    conn.commit()
-    print(f"  Inserted {len(stats)} energy records")
+        all_meta_ids = [row[0] for row in cursor.fetchall()]
+        
+        for meta_id in all_meta_ids:
+            cursor.execute("DELETE FROM statistics WHERE metadata_id = %s", (meta_id,))
+        print(f"    Cleared {len(all_meta_ids)} sensors")
+        
+        # Deduplicate stats (keep last occurrence)
+        seen = {}
+        for s in stats:
+            key = (s[1], s[2])  # (metadata_id, start_ts)
+            seen[key] = s
+        unique_stats = list(seen.values())
+        
+        print(f"  Inserting {len(unique_stats)} records (deduped from {len(stats)})...")
+        batch_size = 5000
+        for i in range(0, len(unique_stats), batch_size):
+            batch = unique_stats[i:i + batch_size]
+            execute_values(
+                cursor,
+                """INSERT INTO statistics 
+                (created_ts, metadata_id, start_ts, mean, min, max, last_reset_ts, state, sum)
+                VALUES %s
+                ON CONFLICT (metadata_id, start_ts) DO UPDATE SET
+                    state = EXCLUDED.state,
+                    sum = EXCLUDED.sum,
+                    created_ts = EXCLUDED.created_ts""",
+                batch
+            )
+            if (i + batch_size) % 50000 == 0:
+                print(f"    Inserted {i + len(batch)}/{len(unique_stats)}...")
+        
+        conn.commit()  # Atomic: DELETE + INSERT committed together
+        print(f"  Inserted {len(unique_stats)} energy records")
+    except Exception as e:
+        conn.rollback()
+        print(f"  ❌ Energy stats insertion failed, rolled back: {e}")
+        raise
 
 
 def insert_power_stats(conn, stats: list, meta_ids: dict):
-    """Insert short-term power statistics."""
+    """Insert short-term power statistics (atomic: DELETE+INSERT in one transaction)."""
     cursor = conn.cursor()
     
-    print("  Clearing old power stats...")
-    for meta_id in meta_ids.values():
-        cursor.execute("DELETE FROM statistics_short_term WHERE metadata_id = %s", (meta_id,))
-    conn.commit()
-    
-    print(f"  Inserting {len(stats)} records...")
-    batch_size = 5000
-    for i in range(0, len(stats), batch_size):
-        execute_values(
-            cursor,
-            """INSERT INTO statistics_short_term 
-            (created_ts, metadata_id, start_ts, mean, min, max, last_reset_ts, state)
-            VALUES %s
-            ON CONFLICT (metadata_id, start_ts) DO UPDATE SET
-                mean = EXCLUDED.mean,
-                min = EXCLUDED.min,
-                max = EXCLUDED.max,
-                created_ts = EXCLUDED.created_ts""",
-            stats[i:i + batch_size]
-        )
-    
-    conn.commit()
-    print(f"  Inserted {len(stats)} power records")
+    try:
+        print("  Clearing old power stats...")
+        for meta_id in meta_ids.values():
+            cursor.execute("DELETE FROM statistics_short_term WHERE metadata_id = %s", (meta_id,))
+        
+        print(f"  Inserting {len(stats)} records...")
+        batch_size = 5000
+        for i in range(0, len(stats), batch_size):
+            execute_values(
+                cursor,
+                """INSERT INTO statistics_short_term 
+                (created_ts, metadata_id, start_ts, mean, min, max, last_reset_ts, state)
+                VALUES %s
+                ON CONFLICT (metadata_id, start_ts) DO UPDATE SET
+                    mean = EXCLUDED.mean,
+                    min = EXCLUDED.min,
+                    max = EXCLUDED.max,
+                    created_ts = EXCLUDED.created_ts""",
+                stats[i:i + batch_size]
+            )
+        
+        conn.commit()  # Atomic: DELETE + INSERT committed together
+        print(f"  Inserted {len(stats)} power records")
+    except Exception as e:
+        conn.rollback()
+        print(f"  ❌ Power stats insertion failed, rolled back: {e}")
+        raise
 
 
 # ============================================

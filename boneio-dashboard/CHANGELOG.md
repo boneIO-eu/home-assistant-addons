@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.9
+
+### Bug Fixes
+- Fixed JS bundle corruption caused by `sub_filter` on `application/javascript`
+- Removed `application/javascript` from `sub_filter_types` — only HTML is filtered now
+- Added path rewriting for static files (`/boneio*`, `/sw.js`) in HTML responses
+- Fixes black screen when accessing boneIO through Cloudflare Tunnel / remote access
+
 ## 1.0.8
 
 ### New Features
