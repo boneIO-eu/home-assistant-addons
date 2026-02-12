@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.10
+
+### Bug Fixes
+- Fixed large JS bundle (4MB+) being truncated by nginx proxy buffers
+- Increased `proxy_buffers` and `proxy_max_temp_file_size` to handle boneIO frontend assets
+- Root cause: `sub_filter` forces nginx to buffer entire response, but default 32KB buffers were too small
+
 ## 1.0.9
 
 ### Bug Fixes
