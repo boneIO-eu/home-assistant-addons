@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+### Bug Fixes
+- Fixed `init-nginx` crash: escape quotes in `Cache-Control` header inside `PROXY_LOCATIONS` bash string
+- `no-cache,` was interpreted as a shell command instead of nginx directive
+
 ## 1.0.11
 
 ### Bug Fixes
