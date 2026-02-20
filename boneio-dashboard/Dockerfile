@@ -1,9 +1,9 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install nginx
+# Install nginx, curl, jq (backup script needs curl+jq)
 RUN apt-get -qq update \
-    && apt-get install -qq --no-install-recommends nginx \
+    && apt-get install -qq --no-install-recommends nginx curl jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy root filesystem
