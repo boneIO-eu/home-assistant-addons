@@ -7,7 +7,8 @@
 # For each device:
 #   1. Optionally login (if username/password configured) to get JWT token
 #   2. Check remote SHA256 checksum (skip download if unchanged)
-#   3. Download config archive (.tar.gz) into /backup/boneio-dashboard/
+#   3. Download config archive (.tar.gz) into /data/backup/
+#      (Supervisor includes /data/ in addon backups automatically)
 #
 # NOTE: This script must ALWAYS exit 0 so HA backup is not blocked.
 # Individual device failures are logged as warnings but do not abort.
@@ -16,7 +17,7 @@
 # Disable exit-on-error — we handle errors per device and must not block HA backup
 set +e
 
-BACKUP_DIR="/backup/boneio-dashboard"
+BACKUP_DIR="/data/backup"
 CHECKSUM_DIR="/data/checksums"
 mkdir -p "${BACKUP_DIR}" "${CHECKSUM_DIR}"
 
