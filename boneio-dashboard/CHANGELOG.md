@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.20
+
+### Bug Fixes
+
+- Fixed backup files not being downloaded — checksum deduplication now also verifies the backup file exists on disk before skipping download
+- Use fixed filename per device (`{slug}.tar.gz`) instead of date-based names to avoid accumulating old files
+- Added `backup_post` hook to clean up temporary backup files from `/data/backup/` after HA packs them into the backup archive — saves disk space between backups
+
 ## 1.0.16
 
 ### Bug Fixes
