@@ -8,20 +8,37 @@
 #   1. Optionally login (if username/password configured) to get JWT token
 #   2. Check remote SHA256 checksum (skip download if unchanged)
 #   3. Download config archive (.tar.gz) into /backup/boneio-dashboard/
+#
+# NOTE: This script must ALWAYS exit 0 so HA backup is not blocked.
+# Individual device failures are logged as warnings but do not abort.
 # ==============================================================================
+
+# Disable exit-on-error — we handle errors per device and must not block HA backup
+set +e
 
 BACKUP_DIR="/backup/boneio-dashboard"
 CHECKSUM_DIR="/data/checksums"
 mkdir -p "${BACKUP_DIR}" "${CHECKSUM_DIR}"
 
 DEVICE_COUNT=$(bashio::config 'devices | length')
+if [ -z "${DEVICE_COUNT}" ] || [ "${DEVICE_COUNT}" -eq 0 ] 2>/dev/null; then
+    bashio::log.info "Backup pre-hook: no devices configured, nothing to do"
+    exit 0
+fi
+
 bashio::log.info "Backup pre-hook: processing ${DEVICE_COUNT} device(s)..."
+
+FAILED=0
 
 for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     NAME=$(bashio::config "devices[${i}].name")
     URL=$(bashio::config "devices[${i}].url")
     USERNAME=$(bashio::config "devices[${i}].username")
     PASSWORD=$(bashio::config "devices[${i}].password")
+
+    # bashio::config returns literal "null" for empty optional fields (str?, password?)
+    [ "${USERNAME}" = "null" ] && USERNAME=""
+    [ "${PASSWORD}" = "null" ] && PASSWORD=""
 
     # Strip trailing slash from URL
     URL="${URL%/}"
@@ -34,12 +51,13 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     TOKEN=""
     if [ -n "${USERNAME}" ] && [ -n "${PASSWORD}" ]; then
         bashio::log.info "    Authenticating with username '${USERNAME}'..."
-        LOGIN_RESPONSE=$(curl -sk -X POST "${URL}/api/login" \
+        LOGIN_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 30 \
+            -X POST "${URL}/api/login" \
             -H "Content-Type: application/json" \
             -d "{\"username\":\"${USERNAME}\",\"password\":\"${PASSWORD}\"}" \
-            2>/dev/null)
+            2>/dev/null) || true
 
-        TOKEN=$(echo "${LOGIN_RESPONSE}" | jq -r '.token // empty' 2>/dev/null)
+        TOKEN=$(echo "${LOGIN_RESPONSE}" | jq -r '.token // empty' 2>/dev/null) || true
 
         if [ -z "${TOKEN}" ]; then
             bashio::log.warning "    Authentication failed for ${NAME}, trying without auth..."
@@ -56,13 +74,15 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
 
     # 2. Check remote checksum — skip download if config unchanged
     if [ -n "${AUTH_HEADER}" ]; then
-        CHECKSUM_RESPONSE=$(curl -sk -H "${AUTH_HEADER}" "${URL}/api/config/checksum" 2>/dev/null)
+        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 \
+            -H "${AUTH_HEADER}" "${URL}/api/config/checksum" 2>/dev/null) || true
     else
-        CHECKSUM_RESPONSE=$(curl -sk "${URL}/api/config/checksum" 2>/dev/null)
+        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 \
+            "${URL}/api/config/checksum" 2>/dev/null) || true
     fi
 
-    REMOTE_SHA=$(echo "${CHECKSUM_RESPONSE}" | jq -r '.sha256 // empty' 2>/dev/null)
-    LOCAL_SHA=$(cat "${CHECKSUM_DIR}/${SLUG}.sha256" 2>/dev/null)
+    REMOTE_SHA=$(echo "${CHECKSUM_RESPONSE}" | jq -r '.sha256 // empty' 2>/dev/null) || true
+    LOCAL_SHA=$(cat "${CHECKSUM_DIR}/${SLUG}.sha256" 2>/dev/null) || true
 
     if [ -n "${REMOTE_SHA}" ] && [ "${REMOTE_SHA}" = "${LOCAL_SHA}" ]; then
         bashio::log.info "    Config unchanged (SHA256: ${REMOTE_SHA:0:12}...), skipping download"
@@ -74,11 +94,13 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     TARGET_PATH="${BACKUP_DIR}/${FILENAME}"
 
     if [ -n "${AUTH_HEADER}" ]; then
-        HTTP_CODE=$(curl -sk -o "${TARGET_PATH}" -w "%{http_code}" \
-            -H "${AUTH_HEADER}" "${URL}/api/config/download" 2>/dev/null)
+        HTTP_CODE=$(curl -sk --connect-timeout 10 --max-time 120 \
+            -o "${TARGET_PATH}" -w "%{http_code}" \
+            -H "${AUTH_HEADER}" "${URL}/api/config/download" 2>/dev/null) || true
     else
-        HTTP_CODE=$(curl -sk -o "${TARGET_PATH}" -w "%{http_code}" \
-            "${URL}/api/config/download" 2>/dev/null)
+        HTTP_CODE=$(curl -sk --connect-timeout 10 --max-time 120 \
+            -o "${TARGET_PATH}" -w "%{http_code}" \
+            "${URL}/api/config/download" 2>/dev/null) || true
     fi
 
     if [ "${HTTP_CODE}" = "200" ]; then
@@ -89,9 +111,17 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
         FILE_SIZE=$(stat -c%s "${TARGET_PATH}" 2>/dev/null || echo "unknown")
         bashio::log.info "    Backup saved: ${FILENAME} (${FILE_SIZE} bytes)"
     else
-        bashio::log.error "    Failed to backup ${NAME} (HTTP ${HTTP_CODE})"
+        bashio::log.warning "    Failed to backup ${NAME} (HTTP ${HTTP_CODE:-000})"
         rm -f "${TARGET_PATH}"
+        FAILED=$((FAILED + 1))
     fi
 done
 
-bashio::log.info "Backup pre-hook completed"
+if [ "${FAILED}" -gt 0 ]; then
+    bashio::log.warning "Backup pre-hook completed with ${FAILED} failed device(s)"
+else
+    bashio::log.info "Backup pre-hook completed successfully"
+fi
+
+# Always exit 0 — device backup failures must not block HA backup
+exit 0
