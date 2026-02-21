@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.0.16
+
+### Bug Fixes
+
+- Fixed backup configs not included in HA backup archive — changed storage from `/backup/` to `/data/backup/` (Supervisor only includes `/data/` in addon backups)
+
+## 1.0.15
+
+### Bug Fixes
+
+- Fixed `No exec command specified` error during backup — removed empty `backup_post` from config
+- Detect old device firmware without backup API — log warning and skip instead of failing
+
+## 1.0.14
+
+### New Features
+
+- Automatic config backup of all boneIO Black devices during HA backup
+- Downloads device config via API before each HA backup (pre-hook)
+- SHA256 checksum deduplication — skips download if config unchanged
+- Optional authentication support (username/password per device)
+
+### Bug Fixes
+
+- Fixed backup script crash caused by bashio `set -e` — any curl failure would abort entire backup
+- Handle bashio `null` for empty optional config fields (username, password)
+- Added curl timeouts to prevent script hanging on unreachable devices
+- Backup script always exits 0 so device failures don't block HA backup
+
 ## 1.0.13
 
 ### New Features
