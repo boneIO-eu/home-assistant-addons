@@ -73,15 +73,26 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     fi
 
     # 2. Check remote checksum — skip download if config unchanged
+    #    Also used to detect old firmware that doesn't support backup API yet.
     if [ -n "${AUTH_HEADER}" ]; then
-        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 \
+        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 -w "\n%{http_code}" \
             -H "${AUTH_HEADER}" "${URL}/api/config/checksum" 2>/dev/null) || true
     else
-        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 \
+        CHECKSUM_RESPONSE=$(curl -sk --connect-timeout 10 --max-time 15 -w "\n%{http_code}" \
             "${URL}/api/config/checksum" 2>/dev/null) || true
     fi
 
-    REMOTE_SHA=$(echo "${CHECKSUM_RESPONSE}" | jq -r '.sha256 // empty' 2>/dev/null) || true
+    # Split response body and HTTP status code
+    CHECKSUM_HTTP=$(echo "${CHECKSUM_RESPONSE}" | tail -n1)
+    CHECKSUM_BODY=$(echo "${CHECKSUM_RESPONSE}" | sed '$d')
+
+    # Detect old software without backup API support
+    if [ "${CHECKSUM_HTTP}" = "404" ] || [ "${CHECKSUM_HTTP}" = "000" ] || [ -z "${CHECKSUM_HTTP}" ]; then
+        bashio::log.warning "    Device ${NAME} does not support config backup yet (HTTP ${CHECKSUM_HTTP:-no response}). Please update the device software."
+        continue
+    fi
+
+    REMOTE_SHA=$(echo "${CHECKSUM_BODY}" | jq -r '.sha256 // empty' 2>/dev/null) || true
     LOCAL_SHA=$(cat "${CHECKSUM_DIR}/${SLUG}.sha256" 2>/dev/null) || true
 
     if [ -n "${REMOTE_SHA}" ] && [ "${REMOTE_SHA}" = "${LOCAL_SHA}" ]; then
