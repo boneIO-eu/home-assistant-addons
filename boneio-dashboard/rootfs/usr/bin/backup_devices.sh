@@ -109,14 +109,20 @@ for i in $(seq 0 $((DEVICE_COUNT - 1))); do
     REMOTE_SHA=$(echo "${CHECKSUM_BODY}" | jq -r '.sha256 // empty' 2>/dev/null) || true
     LOCAL_SHA=$(cat "${CHECKSUM_DIR}/${SLUG}.sha256" 2>/dev/null) || true
 
-    if [ -n "${REMOTE_SHA}" ] && [ "${REMOTE_SHA}" = "${LOCAL_SHA}" ]; then
+    EXPECTED_FILE="${BACKUP_DIR}/${SLUG}.tar.gz"
+    echo "DEBUG: Device ${i}: REMOTE_SHA='${REMOTE_SHA}' LOCAL_SHA='${LOCAL_SHA}' FILE_EXISTS=$([ -f "${EXPECTED_FILE}" ] && echo yes || echo no)" >> /data/backup_debug.log
+    if [ -n "${REMOTE_SHA}" ] && [ "${REMOTE_SHA}" = "${LOCAL_SHA}" ] && [ -f "${EXPECTED_FILE}" ]; then
         bashio::log.info "    Config unchanged (SHA256: ${REMOTE_SHA:0:12}...), skipping download"
+        echo "DEBUG: Device ${i}: SKIPPED - checksum unchanged and file exists" >> /data/backup_debug.log
         continue
     fi
 
     # 3. Download config backup
     FILENAME="${SLUG}.tar.gz"
     TARGET_PATH="${BACKUP_DIR}/${FILENAME}"
+
+    echo "DEBUG: Device ${i}: REMOTE_SHA='${REMOTE_SHA}' LOCAL_SHA='${LOCAL_SHA}' AUTH_HEADER='${AUTH_HEADER}'" >> /data/backup_debug.log
+    echo "DEBUG: Device ${i}: about to download from ${URL}/api/config/download to ${TARGET_PATH}" >> /data/backup_debug.log
 
     if [ -n "${AUTH_HEADER}" ]; then
         HTTP_CODE=$(curl -sk --connect-timeout 10 --max-time 120 \
