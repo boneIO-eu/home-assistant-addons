@@ -17,6 +17,9 @@
 # Disable exit-on-error — we handle errors per device and must not block HA backup
 set +e
 
+# Debug marker — check if this file exists to confirm script ran
+echo "$(date -Iseconds) backup_devices.sh started" >> /data/backup_debug.log
+
 BACKUP_DIR="/data/backup"
 CHECKSUM_DIR="/data/checksums"
 mkdir -p "${BACKUP_DIR}" "${CHECKSUM_DIR}"
