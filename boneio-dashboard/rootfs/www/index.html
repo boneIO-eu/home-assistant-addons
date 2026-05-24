@@ -443,11 +443,13 @@
 
     <script>
         const INGRESS_ENTRY = '__INGRESS_ENTRY__';
+        const STORAGE_KEY = 'boneio-active-device';
         let devices = [];
         let activeIndex = -1;
 
         /**
          * Load device list from generated JSON.
+         * Restores last active device from localStorage or defaults to first.
          */
         async function loadDevices() {
             try {
@@ -455,12 +457,32 @@
                 devices = await resp.json();
                 renderDeviceList();
 
-                // Auto-select first device if available
-                if (devices.length > 0) {
-                    selectDevice(0);
-                }
+                if (devices.length === 0) return;
+
+                // Restore last active device
+                const savedIndex = getSavedDeviceIndex();
+                selectDevice(savedIndex);
+
+                // Prefetch other devices' assets in background
+                schedulePrefetch(savedIndex);
             } catch (err) {
                 console.error('Failed to load devices:', err);
+            }
+        }
+
+        /**
+         * Get saved device index from localStorage, validated against
+         * current device list. Falls back to 0 if invalid.
+         */
+        function getSavedDeviceIndex() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved === null) return 0;
+                const idx = parseInt(saved, 10);
+                if (isNaN(idx) || idx < 0 || idx >= devices.length) return 0;
+                return idx;
+            } catch {
+                return 0;
             }
         }
 
@@ -492,10 +514,16 @@
 
         /**
          * Select a device and load its frontend in the iframe.
+         * Persists selection to localStorage for F5 restore.
          */
         function selectDevice(index) {
             if (index === activeIndex) return;
             activeIndex = index;
+
+            // Persist selection
+            try {
+                localStorage.setItem(STORAGE_KEY, String(index));
+            } catch { /* quota exceeded — ignore */ }
 
             // Close mobile drawer if open
             closeMobileDrawer();
@@ -533,6 +561,71 @@
                 if (loadingEl) loadingEl.remove();
             });
             main.appendChild(iframe);
+        }
+
+        /**
+         * Prefetch CSS/JS assets for all non-active devices in background.
+         * Uses hidden iframes with low priority to warm up the browser cache
+         * without blocking the main device load.
+         */
+        function schedulePrefetch(activeIdx) {
+            // Wait 3 seconds after main device loads before prefetching
+            setTimeout(() => {
+                devices.forEach((device, idx) => {
+                    if (idx === activeIdx) return;
+                    prefetchDeviceAssets(device);
+                });
+            }, 3000);
+        }
+
+        /**
+         * Prefetch a single device's key assets (index page + CSS/JS).
+         * Fetches the HTML page, parses it for <link> and <script> tags,
+         * then uses <link rel="prefetch"> to warm up browser cache.
+         */
+        async function prefetchDeviceAssets(device) {
+            try {
+                const resp = await fetch(device.path, {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'text/html' },
+                });
+                if (!resp.ok) return;
+                const html = await resp.text();
+
+                // Extract CSS and JS URLs from HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Prefetch stylesheets
+                doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href) addPrefetchLink(href, 'style');
+                });
+
+                // Prefetch scripts
+                doc.querySelectorAll('script[src]').forEach(script => {
+                    const src = script.getAttribute('src');
+                    if (src) addPrefetchLink(src, 'script');
+                });
+            } catch {
+                // Silently ignore prefetch errors
+            }
+        }
+
+        /**
+         * Add a <link rel="prefetch"> tag to the document head.
+         * Skips if already added.
+         */
+        function addPrefetchLink(url, asType) {
+            // Avoid duplicates
+            if (document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
+
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = url;
+            link.as = asType;
+            link.crossOrigin = 'anonymous';
+            document.head.appendChild(link);
         }
 
         /**

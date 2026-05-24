@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.21
+
+### Improvements
+
+- **Persistent device selection** — Dashboard remembers which controller was active when you press F5 or reload the page. Uses `localStorage` to persist the selection. Falls back to first device if saved index is invalid.
+- **Background asset prefetch** — 3 seconds after the active device loads, the dashboard fetches HTML pages of other configured devices and adds `<link rel="prefetch">` tags for their CSS/JS bundles. This warms the browser cache so switching between devices feels near-instant.
+
 ## 1.0.20
 
 ### Bug Fixes
