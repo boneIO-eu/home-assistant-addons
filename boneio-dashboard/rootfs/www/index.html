@@ -554,6 +554,8 @@
 
             // Create iframe
             const iframe = document.createElement('iframe');
+            // Allow clipboard access inside the iframe (Permissions Policy)
+            iframe.allow = 'clipboard-read; clipboard-write';
             const sep = device.path.includes('?') ? '&' : '?';
             iframe.src = device.path + sep + 'theme=' + currentTheme;
             iframe.addEventListener('load', () => {
