@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.22
+
+### Performance
+
+- **gzip + brotli compression** — Enabled nginx gzip and brotli compression for proxied responses. Monaco editor chunk: ~4MB raw → ~720KB brotli (~82% reduction). Previously responses were sent uncompressed because `Accept-Encoding` was disabled for `sub_filter` compatibility.
+- **Fixed browser caching** — Removed blanket `Cache-Control: no-store` from proxy locations that was overriding backend cache headers. Hashed assets (JS/CSS/fonts) are now cached by the browser for 1 year. Previously every page load re-downloaded all assets.
+
 ## 1.0.21
 
 ### Improvements
