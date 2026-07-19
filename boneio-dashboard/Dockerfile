@@ -1,9 +1,12 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install nginx, curl, jq (backup script needs curl+jq)
+# Install nginx with brotli module, curl, jq (backup script needs curl+jq)
 RUN apt-get -qq update \
-    && apt-get install -qq --no-install-recommends nginx curl jq \
+    && apt-get install -qq --no-install-recommends \
+        nginx \
+        libnginx-mod-http-brotli-filter \
+        curl jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy root filesystem
